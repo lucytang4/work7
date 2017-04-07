@@ -43,16 +43,42 @@ triangles
 ====================*/
 void draw_polygons( struct matrix *polygons, screen s, color c ) {
   int point;
-  for (point=0; point < polygons->lastcol-1; point+=3){
-    draw_line( polygons->m[0][point],polygons->m[1][point],
-	       polygons->m[0][point+1],polygons->m[1][point+1],
-	       s, c);
-    draw_line( polygons->m[0][point],polygons->m[1][point],
-	       polygons->m[0][point+2],polygons->m[1][point+2],
-	       s, c);
-    draw_line( polygons->m[0][point+1],polygons->m[1][point+1],
-	       polygons->m[0][point+2],polygons->m[1][point+2],
-	       s, c);
+  struct matrix *a = new_matrix(4,1);
+  struct matrix *b = new_matrix(4,1);
+  struct matrix *n = new_matrix(4,1);
+  struct matrix *v = new_matrix(4,1);
+  double cosTheta;
+
+  v->m[0][0] = 0;
+  v->m[1][0] = 0;
+  v->m[2][0] = 1;
+  
+  for (point=0; point < polygons->lastcol-2; point+=3){
+    a->m[0][0] = polygons->m[0][point+1] - polygons->m[0][point];
+    a->m[1][0] = polygons->m[1][point+1] - polygons->m[1][point];
+    a->m[2][0] = polygons->m[2][point+1] - polygons->m[2][point];
+
+    b->m[0][0] = polygons->m[0][point+2] - polygons->m[0][point];
+    b->m[1][0] = polygons->m[1][point+2] - polygons->m[1][point];
+    b->m[2][0] = polygons->m[2][point+2] - polygons->m[2][point];
+
+    n->m[0][0] = (a->m[1][0] * b->m[2][0]) - (a->m[2][0] * b->m[1][0]);
+    n->m[1][0] = (a->m[2][0] * b->m[0][0]) - (a->m[0][0] * b->m[2][0]);
+    n->m[2][0] = (a->m[0][0] * b->m[1][0]) - (a->m[1][0] * b->m[0][0]);
+    
+    cosTheta = (v->m[0][0] * n->m[0][0]) + (v->m[1][0] * n->m[1][0]) + (v->m[2][0] * n->m[2][0]);
+
+    if (cosTheta > 0){
+      draw_line( polygons->m[0][point],polygons->m[1][point],
+		 polygons->m[0][point+1],polygons->m[1][point+1],
+		 s, c);
+      draw_line( polygons->m[0][point],polygons->m[1][point],
+		 polygons->m[0][point+2],polygons->m[1][point+2],
+		 s, c);
+      draw_line( polygons->m[0][point+1],polygons->m[1][point+1],
+		 polygons->m[0][point+2],polygons->m[1][point+2],
+		 s, c);
+    }
   }	
 }
 
